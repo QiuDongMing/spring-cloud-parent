@@ -7,6 +7,7 @@ import com.qdm.mapper.UserMapper;
 import com.qdm.model.po.User;
 import com.qdm.model.vo.PageVo;
 import com.qdm.model.vo.UserInfoVO;
+import com.qdm.support.mongo.MongoDao;
 import com.qdm.utils.BeanUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 
@@ -30,10 +32,13 @@ public class UserService {
     @Autowired
     private UserMapper userMapper;
 
-    public UserInfoVO queryUserInfo(int userId) {
-        User user = userMapper.queryByUserId(userId);
-        UserInfoVO userInfo = BeanUtil.copy(user, UserInfoVO.class);
+    @Autowired
+    private MongoDao mongoDao;
 
+    public UserInfoVO queryUserInfo(int userId) {
+        User user = mongoDao.getByPK(User.class, userId+"");
+        //User user = userMapper.queryByUserId(userId);
+        UserInfoVO userInfo = BeanUtil.copy(user, UserInfoVO.class);
         return userInfo;
     }
 
@@ -56,6 +61,14 @@ public class UserService {
         userInfoVOPageVo.setPageData(data);
 
         return userInfoVOPageVo;
+    }
+
+    @Transactional
+    public User addUser(User user) {
+        user.setCreateTime(System.currentTimeMillis());
+        userMapper.insert(user);
+        mongoDao.insertOrUpdate(user);
+        return user;
     }
 
 }

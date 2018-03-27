@@ -1,21 +1,25 @@
 package com.qdm.model.po;
 
-import java.util.Date;
+import com.qdm.support.mongo.base.AbstractBaseInfo;
+import org.mongodb.morphia.annotations.Entity;
+import org.springframework.data.mongodb.core.mapping.Document;
 
 /**
  * @author qiudm
  * @date 2018/3/22 18:03
  * @desc
  */
-public class User {
+@Entity(value = "t_user", noClassnameStored = true)
+@Document(collection = "t_user")//spring mongo
+public class User extends AbstractBaseInfo {
 
     private Integer userId;
 
     private String username;
 
-    private Date birthday;
+    private long birthday;
 
-    private Date createTime;
+    private long createTime;
 
     public Integer getUserId() {
         return userId;
@@ -33,19 +37,19 @@ public class User {
         this.username = username;
     }
 
-    public Date getBirthday() {
+    public long getBirthday() {
         return birthday;
     }
 
-    public void setBirthday(Date birthday) {
+    public void setBirthday(long birthday) {
         this.birthday = birthday;
     }
 
-    public Date getCreateTime() {
+    public long getCreateTime() {
         return createTime;
     }
 
-    public void setCreateTime(Date createTime) {
+    public void setCreateTime(long createTime) {
         this.createTime = createTime;
     }
 }

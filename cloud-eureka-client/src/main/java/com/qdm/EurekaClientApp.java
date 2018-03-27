@@ -12,7 +12,7 @@ import org.springframework.context.annotation.ComponentScan;
  */
 @EnableDiscoveryClient
 @SpringBootApplication
-@ComponentScan("com.qdm")
+@ComponentScan({"com.qdm","org.springframework.data.mongodb"})
 public class EurekaClientApp {
     public static void main(String[] args) {
         new SpringApplicationBuilder(EurekaClientApp.class).web(true).run();
