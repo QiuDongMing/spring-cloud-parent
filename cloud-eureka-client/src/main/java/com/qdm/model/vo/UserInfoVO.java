@@ -1,6 +1,5 @@
 package com.qdm.model.vo;
 
-import java.util.Date;
 
 /**
  * @author qiudm
@@ -13,9 +12,9 @@ public class UserInfoVO {
 
     private String username;
 
-    private Date birthday;
+    private long birthday;
 
-    private Date createTime;
+    private long createTime;
 
     public Integer getUserId() {
         return userId;
@@ -33,21 +32,19 @@ public class UserInfoVO {
         this.username = username;
     }
 
-    public Date getBirthday() {
+    public long getBirthday() {
         return birthday;
     }
 
-    public void setBirthday(Date birthday) {
+    public void setBirthday(long birthday) {
         this.birthday = birthday;
     }
 
-    public Date getCreateTime() {
+    public long getCreateTime() {
         return createTime;
     }
 
-    public void setCreateTime(Date createTime) {
+    public void setCreateTime(long createTime) {
         this.createTime = createTime;
     }
-
-
 }

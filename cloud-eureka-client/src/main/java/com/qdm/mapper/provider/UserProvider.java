@@ -16,7 +16,7 @@ public class UserProvider {
 
     public String updateUser(User user) {
         SQL sql = new SQL();
-        sql.UPDATE("user");
+        sql.UPDATE("t_user");
 
         if(StringUtils.isNotBlank(user.getUsername())) {
             sql.SET(" username=#{username, jdbcType=VARCHAR}");
