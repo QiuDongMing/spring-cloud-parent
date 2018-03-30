@@ -9,6 +9,8 @@ import com.qdm.model.vo.PageVo;
 import com.qdm.model.vo.UserInfoVO;
 import com.qdm.support.mongo.MongoDao;
 import com.qdm.utils.BeanUtil;
+import com.qdm.utils.redis.RedisLock;
+import com.qdm.utils.redis.RedisParameterLocked;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -62,8 +64,10 @@ public class UserService {
         return userInfoVOPageVo;
     }
 
+    //限定20s内只能添加一个，非业务场景，仅测试
     @Transactional
-    public User addUser(User user) {
+    @RedisLock(key = "add_user", expireTime = 20, msg = "只能添加一次")
+    public User addUser(User user, @RedisParameterLocked String name) {
         user.setCreateTime(System.currentTimeMillis());
         userMapper.insert(user);
         mongoDao.insertOrUpdate(user);
