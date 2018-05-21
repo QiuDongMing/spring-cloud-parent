@@ -27,7 +27,7 @@ public class MongoConfig {
     private MongoProperties mongoProperties;
 
 
-    @Bean(name = "mgdataSource")
+    @Bean(name = "dsForRw")
     public Datastore dfForDw() {
         MongoClientOptions.Builder builder = MongoClientOptions.builder();
         builder.connectTimeout(5000);

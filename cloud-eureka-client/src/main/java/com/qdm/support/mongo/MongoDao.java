@@ -33,11 +33,11 @@ public class MongoDao {
 
     private static final Logger logger = LoggerFactory.getLogger(MongoDao.class);
 
-    @Resource(name = "mgdataSource")
-    private AdvancedDatastore datastore;
+    @Resource(name = "dsForRw")
+    private AdvancedDatastore dsForRw;
 
     public <T> T getByObjectId(final Class<?> clazz, ObjectId objectId) {
-        Query<T> query = (Query<T>)datastore.createQuery(clazz);
+        Query<T> query = (Query<T>)dsForRw.createQuery(clazz);
         query.filter(Mapper.ID_KEY, objectId);
         return query.get();
     }
@@ -51,52 +51,52 @@ public class MongoDao {
     public <T> T findAndModifyByPK(final Class<?> clazz,String pk,DBObject update){
         Query <T> query = this.createQuery(clazz, pk);
         UpdateOperations<T> ops = this.createUpdateOperations(clazz, update);
-        return datastore.findAndModify(query, ops);
+        return dsForRw.findAndModify(query, ops);
     }
 
     public <T> T findAndModify(final Class<?> clazz,DBObject filter,DBObject update){
         Query<T> query = this.createQuery(clazz, filter);
         UpdateOperations<T> ops = this.createUpdateOperations(clazz,update);
-        return datastore.findAndModify(query, ops);
+        return dsForRw.findAndModify(query, ops);
     }
 
     public <T> T findAndModifyOrCreate(final Class<?> clazz,DBObject filter,DBObject update){
         Query<T> query = this.createQuery(clazz, filter);
         UpdateOperations<T> ops = this.createUpdateOperations(clazz,update);
-        return datastore.findAndModify(query, ops,false, true);
+        return dsForRw.findAndModify(query, ops,false, true);
     }
 
     public <T> UpdateResults update(final Class<?> clazz, DBObject filter, DBObject update)
     {
         Query<T> query = this.createQuery(clazz, filter);
         UpdateOperations<T> ops = this.createUpdateOperations(clazz, update);
-        return datastore.update(query, ops);
+        return dsForRw.update(query, ops);
     }
 
     @SuppressWarnings("unchecked")
     public <T> UpdateResults addToArray(final Class<?> clazz, DBObject filter, String fieldExpr, List<?> values, boolean addDups)
     {
         Query<T> query = this.createQuery(clazz, filter);
-        UpdateOperations<T> ops = (UpdateOperations<T>) datastore.createUpdateOperations(clazz);
+        UpdateOperations<T> ops = (UpdateOperations<T>) dsForRw.createUpdateOperations(clazz);
         ops.addAll(fieldExpr, values,addDups);
-        return datastore.update(query, ops);
+        return dsForRw.update(query, ops);
     }
 
     @SuppressWarnings("unchecked")
     public <T> UpdateResults removeFromArray(final Class<?> clazz,DBObject filter,String fieldExpr, Object value)
     {
         Query<T> query = this.createQuery(clazz, filter);
-        UpdateOperations<T> ops = (UpdateOperations<T>) datastore.createUpdateOperations(clazz);
+        UpdateOperations<T> ops = (UpdateOperations<T>) dsForRw.createUpdateOperations(clazz);
         ops.removeAll(fieldExpr, value);
-        return datastore.update(query, ops);
+        return dsForRw.update(query, ops);
     }
 
     @SuppressWarnings("unchecked")
     public <T> UpdateResults removeAllFromArray(final Class<?> clazz,DBObject filter,String fieldExpr, List<?> values){
         Query<T> query = this.createQuery(clazz, filter);
-        UpdateOperations<T> ops = (UpdateOperations<T>) datastore.createUpdateOperations(clazz);
+        UpdateOperations<T> ops = (UpdateOperations<T>) dsForRw.createUpdateOperations(clazz);
         ops.removeAll(fieldExpr, values);
-        return datastore.update(query, ops);
+        return dsForRw.update(query, ops);
     }
 
 
@@ -109,18 +109,18 @@ public class MongoDao {
             AbstractBaseInfo obj = (AbstractBaseInfo) entity;
             if (obj.getId() == null) {
                 obj.setId(MongodbUtil.genMongoId());
-                datastore.insert(obj);
+                dsForRw.insert(obj);
                 return entity;
             }
         }
-        datastore.save(entity);
+        dsForRw.save(entity);
         return entity;
     }
     //	public <T>T insert(T entity) {
 //		if (entity == null) {
 //			return null;
 //		}
-//		Key<T> key = datastore.insert(entity);
+//		Key<T> key = dsForRw.insert(entity);
 //		return entity;
 //	}
     public void batchInsert(List<?> objList) {
@@ -138,7 +138,7 @@ public class MongoDao {
                 arrays[i++]=obj;
             }
         }
-        datastore.insert(arrays);
+        dsForRw.insert(arrays);
     }
 
     public <T> T get(final Class<?> clazz,String field,Object value)
@@ -208,7 +208,7 @@ public class MongoDao {
 //	}
 
     public boolean exists(final Class<?> clazz,DBObject query){
-        return datastore.getCollection(clazz).getCount(query)>0;
+        return dsForRw.getCollection(clazz).getCount(query)>0;
     }
 
     public <T> void remove(final Class<?> clazz,DBObject filter){
@@ -220,13 +220,13 @@ public class MongoDao {
             throw new ServiceException("删除条件为空");
         }
         Query<T> query = this.createQuery(clazz, filter);
-        datastore.delete(query);
+        dsForRw.delete(query);
     }
 
     @SuppressWarnings("unchecked")
     public <T> void cleanTable(final Class<?> clazz){
-        Query<T> query = (Query<T>) datastore.createQuery(clazz);
-        datastore.delete(query);
+        Query<T> query = (Query<T>) dsForRw.createQuery(clazz);
+        dsForRw.delete(query);
     }
     /**
      * field支持多级嵌套 ，比如：order.patient.id
@@ -236,7 +236,7 @@ public class MongoDao {
         DBObject projection = new BasicDBObject();
         projection.put(field, 1);//1表示返回的数据 只包含这个字段，0表示排除
 
-        DBCursor cursor =  datastore.getCollection(clazz).find(filter, projection);
+        DBCursor cursor =  dsForRw.getCollection(clazz).find(filter, projection);
         List<String> fieldValueList = new ArrayList<String>();
         while (cursor.hasNext()) {
             DBObject obj = cursor.next();
@@ -263,7 +263,7 @@ public class MongoDao {
 
     @SuppressWarnings("unchecked")
     private <T> UpdateOperations<T> createUpdateOperations(final Class<?> clazz,DBObject update){
-        UpdateOperations<T> ops = (UpdateOperations<T>) datastore.createUpdateOperations(clazz);
+        UpdateOperations<T> ops = (UpdateOperations<T>) dsForRw.createUpdateOperations(clazz);
         for( String field:update.keySet()){
             ops.set(field, update.get(field));
         }
@@ -272,7 +272,7 @@ public class MongoDao {
 
     @SuppressWarnings("unchecked")
     private <T> Query<T> createQuery(final Class<?> clazz,DBObject filter) {
-        Query<T> query = (Query<T>) datastore.createQuery(clazz);
+        Query<T> query = (Query<T>) dsForRw.createQuery(clazz);
         if(filter!=null){
             for(String condition:filter.keySet()){
                 query.filter(condition, filter.get(condition));
@@ -284,7 +284,7 @@ public class MongoDao {
 
     @SuppressWarnings("unchecked")
     private <T> Query<T> createQuery(final Class<?> clazz,String id) {
-        Query<T> query = (Query<T>) datastore.createQuery(clazz);
+        Query<T> query = (Query<T>) dsForRw.createQuery(clazz);
         query.filter(Mapper.ID_KEY,id);
         return query;
     }
@@ -311,7 +311,7 @@ public class MongoDao {
     }
 
     public <T> DBCollection getCollection(Class<?> clazz) {
-        return datastore.getCollection(clazz);
+        return dsForRw.getCollection(clazz);
     }
     /**
      * 排除某些属性
@@ -374,7 +374,7 @@ public class MongoDao {
      */
     @SuppressWarnings("unchecked")
     public List<DBObject> group(final Class<?> clazz,final DBObject key, final DBObject cond, final DBObject initial, final String reduce){
-        return (List<DBObject>) datastore.getCollection(clazz).group(key, cond, initial, reduce);
+        return (List<DBObject>) dsForRw.getCollection(clazz).group(key, cond, initial, reduce);
     }
 
     /**
@@ -388,21 +388,21 @@ public class MongoDao {
      * @return
      */
 //	private Iterable<DBObject> aggregate(final Class<?> clazz,final List<? extends DBObject> pipeline){
-//		AggregationOutput out = datastore.getCollection(clazz).aggregate(pipeline);
+//		AggregationOutput out = dsForRw.getCollection(clazz).aggregate(pipeline);
 //		if(out!=null){
 //			return out.results();
 //		}
-////		datastore.getCollection(clazz).aggregate(pipeline, options)
+////		dsForRw.getCollection(clazz).aggregate(pipeline, options)
 //		return null;
 //	}
 
     @SuppressWarnings("unchecked")
     public List<Object> distinct(final Class<?> clazz,final String fieldName, final DBObject query){
-        return datastore.getCollection(clazz).distinct(fieldName, query);
+        return dsForRw.getCollection(clazz).distinct(fieldName, query);
     }
 
     public long count(final Class<?> clazz,final DBObject query){
-        return datastore.getCollection(clazz).count(query);
+        return dsForRw.getCollection(clazz).count(query);
     }
     //***************************************************************************//
     /**
@@ -442,7 +442,7 @@ public class MongoDao {
     }
 
     private void batchUpdateByPage(final Class<?> clazz,List<BatchUpdateRequest> requestList,boolean updateOne,boolean createIfMissing) {
-        BulkWriteOperation bulk = datastore.getCollection(clazz).initializeOrderedBulkOperation();
+        BulkWriteOperation bulk = dsForRw.getCollection(clazz).initializeOrderedBulkOperation();
         for(BatchUpdateRequest request : requestList){
             if(request.getFilter()==null && request.getPk()!=null){
                 request.setFilter(new BasicDBObject("_id", request.getPk()));
@@ -482,7 +482,7 @@ public class MongoDao {
         if(objList==null || objList.size()<=0){
             return;
         }
-        BulkWriteOperation bulk = datastore.getCollection(clazz).initializeOrderedBulkOperation();
+        BulkWriteOperation bulk = dsForRw.getCollection(clazz).initializeOrderedBulkOperation();
 
         DBObject document;
         for(AbstractBaseInfo obj :objList){
@@ -505,7 +505,7 @@ public class MongoDao {
      * @param objList
      */
     public void batchUpdate(final Class<?> clazz,List<? extends AbstractBaseInfo> objList) {
-        BulkWriteOperation bulk = datastore.getCollection(clazz).initializeUnorderedBulkOperation();
+        BulkWriteOperation bulk = dsForRw.getCollection(clazz).initializeUnorderedBulkOperation();
         for(AbstractBaseInfo obj :objList){
             if(obj.getId()==null){
                 continue;
@@ -521,7 +521,7 @@ public class MongoDao {
         bulk.execute();
     }
 //	public MongoClient mongoClient(){
-//		return datastore.getMongo();
+//		return dsForRw.getMongo();
 //	}
 
     private static <T> DBObject bean2DBObject(T bean) throws IllegalArgumentException, IllegalAccessException {
